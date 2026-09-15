@@ -1,0 +1,27 @@
+# Item 2: keep GitHub App full scans fresh for this repo's SCA surface
+# (requirements.txt and go.mod), independent of the Basics scan.
+# Push to the DEFAULT branch is the only event trigger. See payments-api.
+name: socket-heartbeat
+on:
+  schedule:
+    - cron: '44 */4 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: socket-heartbeat
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DEMO_PUSH_TOKEN }}
+      - run: |
+          set -euo pipefail
+          git config user.name  "contoso-ci"
+          git config user.email "ci@contoso-eng.invalid"
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .socket-heartbeat
+          git add .socket-heartbeat
+          git commit -m "chore: scan heartbeat $(date -u +%H:%M)"
+          git push origin HEAD:main

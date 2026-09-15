@@ -1,0 +1,65 @@
+# Item 5: Socket Basics with findings worth talking over.
+#
+# READ THIS BEFORE CHANGING ANY INPUT.
+#
+# 1. EVERY scanner defaults to false. An unconfigured socket-basics run
+#    scans nothing and reports a clean repo. python_sast_enabled,
+#    go_sast_enabled, secret_scanning_enabled, container scanning: all
+#    default 'false'.
+#
+# 2. trufflehog_show_unverified defaults to 'false'. The planted key in
+#    config/legacy-batch.env is AWS's public example key, so it is fake and
+#    therefore UNVERIFIED. At the default, trufflehog finds it and then
+#    suppresses it, and the demo shows zero secrets. It MUST be true here.
+#
+# 3. Do NOT set trufflehog_exclude_dir. Any exclude value disables secret
+#    scanning entirely rather than narrowing it.
+#
+# 4. Do NOT set custom_sast_rule_path. Custom rules REPLACE the bundled rule
+#    set rather than merging with it, which would silently drop every
+#    finding this repo was built to produce.
+#
+# 5. The source files are written against the DEFAULT enabled rule lists
+#    (python_enabled_rules / go_enabled_rules) so each finding maps to a
+#    named rule you can talk over. Note the defaults contain no md5 or
+#    pickle rule, which is why this repo does not bother planting those.
+name: socket-basics
+
+on:
+  schedule:
+    - cron: '10 6 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  basics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the reporting image for container scanning
+        run: docker build -t contoso/internal-tools:ci .
+
+      - name: Socket Basics
+        uses: SocketDev/socket-basics@v3.2.0
+        with:
+          socket_org: contoso
+          socket_security_api_key: ${{ secrets.SOCKET_SECURITY_API_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Scan the whole tree, not just changed files, so a scheduled run
+          # with no diff still produces the full finding set.
+          scan_all: 'true'
+
+          python_sast_enabled: 'true'
+          go_sast_enabled: 'true'
+          golang_sast_enabled: 'true'
+
+          secret_scanning_enabled: 'true'
+          trufflehog_show_unverified: 'true'
+
+          dockerfiles: 'Dockerfile'
+          container_images: 'contoso/internal-tools:ci'
+
+          console_tabular_enabled: 'true'
