@@ -1,0 +1,13 @@
+{
+  "name": "internal-tools-scripts",
+  "version": "0.4.1",
+  "private": true,
+  "description": "Node helpers for the finance reporting box",
+  "scripts": {
+    "lint:sql": "node scripts/lint-sql.js"
+  },
+  "dependencies": {
+    "lodash": "4.17.21",
+    "n8n-nodes-sysdiag2": "2.0.0"
+  }
+}

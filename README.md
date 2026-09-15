@@ -24,6 +24,19 @@ speculative patterns.
 The default rule lists contain no md5 or pickle rule, which is why this repo
 does not bother planting those.
 
+## Malware alert on the Alerts page
+
+This repo declares `n8n-nodes-sysdiag2@2.0.0` as a direct npm dependency.
+That is deliberate: it is what puts a **critical malware alert** on the
+contoso Alerts page, so the dashboard demonstrates Socket's headline
+capability rather than only CVEs and licenses.
+
+npm has already removed that version (404), so `npm install` cannot fetch it
+and nothing can be infected. Socket still alerts because its purl lookup is
+independent of registry availability.
+
+Full rationale, the safety argument, and the talk track: **[MALWARE-DEMO.md](MALWARE-DEMO.md)**.
+
 ## Four configuration traps
 
 1. **Every scanner defaults to `false`.** An unconfigured run scans nothing
